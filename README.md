@@ -85,12 +85,8 @@ The `-o` argument specifies the output directory. Note that this
 directory will be created if it does not already exist. Inside the
 output directory, PanDetector generates a series of intermediate output files during the alignment process, but the main program outputs are:
 
-- `msa.maf.gz`: This is a gzipped version of a standard MAF file, with each entry containing one subject file for each genome. Coordinates and strandness of entries are in respect to the original genome FASTA file. Once gunzipped, this MAF output file is appropriate for structural variation detection.
-- `mfasta/`: This directory contains FASTA files for each genome, constructed by concatenating that genome's subject line from all entries of the (gunzipped) `msa.maf` file. You can readily concatenate these files together to construct a full FASTA file, e.g. on Linux:
-   ```bash
-   cat mfasta/* > concatenated_msa.fa
-   ```
-   This file is then appropriate for phylogenetics tree construction. The name of each entry will be the same name as the genome given in the input genome list file.
+- `core_msa.maf.gz`: This is a gzipped version of a standard MAF file, each entry of core contains subject lines related to all the genomes. Coordinates and strandness of entries are in respect to the original genome FASTA file. 
+- `accessory_msa.maf.gz`: This is a gzipped version of a standard MAF file, each entry of accessory contains subject lines related to some (but not all) of the genomes. Coordinates and strandness of entries are in respect to the original genome FASTA file. 
 
 The `-d` argument is the expected divergence level, and can be any integer between 1 and 40.
 
