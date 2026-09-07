@@ -1,10 +1,10 @@
-# Computing and analysis of core-genome alignments with CoreDetector
+# Computing and analysis of pan-genome alignments with PanDetector
 
-### Mario Fruzangohar & Paula Moolhuijzen
+### Mario Fruzangohar , Julian Taylor  & Wasin 
 ##### mario.fruzangohar@adelaide.edu.au
 ##### 31-08-2023
 
-The analysis of the core-genome alignments of conserved sequence is important to measure genetic changes between population individuals and show not only the evolutionary relationships within a population but provide further insight into core gene functions and how these may shift over time or geography. This is however complicated by the limitation of current tools containing the functionality to process larger and more diverse speices. CoreDetector is a fast and flexible program that is able to identify the core-genome sequence of larger and more evolutionary diverse genomes. This document explains how to install and use CoreDetector, for core genome alignment, phylogenetic tree reconstruction and gives an example for the comparison of phylogenetic trees.
+The analysis of the pan-genome alignments of conserved sequence is important to measure genetic changes between population individuals and show not only the evolutionary relationships within a population but provide further insight into core gene functions and how these may shift over time or geography. This is however complicated by the limitation of current tools containing the functionality to process larger and more diverse speices. PanDetector is a fast and flexible program that is able to identify the pan-genome sequence of larger and more evolutionary diverse genomes. This document explains how to install and use PanDetector, for pan genome alignment (core and accessory), phylogenetic tree reconstruction from core genome and gives an example for the comparison of phylogenetic trees.
 
 ## Table of Contents
 
@@ -17,12 +17,12 @@ The analysis of the core-genome alignments of conserved sequence is important to
   - [Comparing trees](#comp)
 
 
-## <a name="install"></a> 1. CoreDetector installation
+## <a name="install"></a> 1. PanDetector installation
 
 
 ### <a name="depends"></a>Dependencies
 
-CoreDetector depends on the fast and efficient pairwise alignment tool Minimap2 and k8 javascript engine. You can install Minimap2 and k8 at different directories, 
+PanDetector depends on the fast and efficient pairwise alignment tool Minimap2 and k8 javascript engine. You can install Minimap2 and k8 at different directories, 
 but we recommend to install both at the same directory.
 
 **`Step 1.`** First change directory to where you want minimap2 and k8 being installed and then run following commands:
@@ -39,18 +39,18 @@ export PATH="$PATH:`pwd`:`pwd`/misc"
 **`Step 2.`** Make sure Java 1.8 or higher is installed. 
 
 
-### <a name="download"></a> Obtaining and setting up CoreDetector
+### <a name="download"></a> Obtaining and setting up PanDetector
 
-**`Step 4.`** Download the CoreDetector package from GitHub
+**`Step 4.`** Download the PanDetector package from GitHub
 
 ```bash 
-git clone https://github.com/mfruzan/CoreDetector.git
+git clone https://github.com/biometryhub/PanDetector.git
 ```
 
-**`Step 5.`** Change directory into the CoreDetector directory
+**`Step 5.`** Change directory into the PanDetector directory
 
 ```bash
-cd CoreDetector
+cd PanDetector
 ```
 
 **`Step 6.`** Make sure the pipeline is executable by changing the file permissions.
@@ -60,7 +60,7 @@ chmod +x pipeline_Minimap.sh
 ```
 
 **`Step 7.`** 
-The CoreDetector pipeline can be run in the current directory. 
+The PanDetector pipeline can be run in the current directory. 
 
 ```bash
 ./pipeline_Minimap.sh
@@ -76,9 +76,9 @@ sudo cp MFbio.jar pipeline_Minimap.sh /usr/local/bin/
 ```
 
 
-## <a name="iformat"></a> 2. Data input formats for CoreDetector
+## <a name="iformat"></a> 2. Data input formats for PaneDetector
 
-CoreDetector requires two data inputs. The first is fasta formatted genome files (input 1) and the second is a text file that lists of the name and full path to the FASTA files for each genome (input 2). 
+PanDetector requires two data inputs. The first is fasta formatted genome files (input 1) and the second is a text file that lists of the name and full path to the FASTA files for each genome (input 2). 
 
 Published fasta formatted genomes can be downloaded using NCBI tools datasets and dataformats. Install these tools and we will download a data set of genomes in the next section.
 
@@ -105,11 +105,11 @@ Genome3 /dir/to/fasta/files/g3.fa
 We have provided in our GitHub a file that lists the genomes we will use in the next section "example/genomes.txt". In this file genome 1 becomes the query and the remainder genomes become the subjects. 
 
 
-## <a name="options"></a>3. CoreDetector usage
+## <a name="options"></a>3. PanDetector usage
 
-After CoreDetector is setup, the Minimap2 pipeline can be run.
+After PanDetector is setup, the Minimap2 pipeline can be run.
 
-**`Step 1.`** Let us first view the CoreDetector options (arguments)
+**`Step 1.`** Let us first view the PanDetector options (arguments)
 
 The required and mandatory options for the Minimap2 pipeline (pipeline_Minimap.sh) can be  viewed using the help (-h) argument as follows.
 
@@ -119,7 +119,7 @@ pipeline_Minimap.sh -h
 Output:
 
 ```
-CoreDetector pipeline: for further help see https://github.com/mfruzan/CoreDetector.git
+PanDetector pipeline: for further help see https://github.com/biometryhub/PanDetector.git
 
 Usage:
       ./pipeline_Minimap.sh -g <genome_list> -o <out_dir> -d <divergence> -n <ncpus>  -m <minlength>  -c <chromosome>
@@ -147,7 +147,7 @@ Note the first three arguments are mandatory:
 
 **`Step 2.`**  Download the fasta formatted genomes from NCBI 
 
-To see how CoreDetector works we will apply it to a set of 23 fungal genomes using the NCBI datasets tool to download the genomes based on a single BioProject number PRJNA315205
+To see how PanDetector works we will apply it to a set of 23 fungal genomes using the NCBI datasets tool to download the genomes based on a single BioProject number PRJNA315205
 
 ```bash
 mkdir genomes
@@ -167,7 +167,7 @@ GCA_003231345.1  GCA_008692205.1  GCA_022788405.1  GCA_022788505.1  assembly_dat
 GCA_003231355.1  GCA_022544795.1  GCA_022788415.1  GCA_022788515.1  dataset_catalog.json
 ```
 
-**`Step 3.`** Run the CoreDetector pipeline using the list of genomes
+**`Step 3.`** Run the PanDetector pipeline using the list of genomes
 
 Note: The genomes.txt is supplied in the example folder. You can move the file to the current path.
 
@@ -177,7 +177,7 @@ mv example/genomes.txt .
 ls output/
 ```
 
-After CoreDetector has completed (~5mins) you will see the final alignment length and find the results in the output folder.
+After PanDetector has completed (~5mins) you will see the final alignment length and find the results in the output folder.
 
 Output:
 
@@ -188,17 +188,8 @@ Length of Alignment 33764393
 Total Query Length 32082566
 Done!
 
-filtered_maf  maf  mfasta  msa.maf.gz  temp_fasta
+filtered_maf  maf   core_msa.maf.gz  accessory_msa.maf.gz temp_fasta
 ```
-
-The mfasta/ directory contains the extracted fasta alignment for each genome in a separate file. You can concatenate the genome FASTA files
-together using cat:
-
-```bash
-cat mfasta/* > concatenated_msa.fa
-```
-This new file concatinated_msa.fa then contains the complete fasta alignment that can be used for further analysis.
-
 
 ## <a name="analysis"></a> 4. Futher analysis of the core genome
 
