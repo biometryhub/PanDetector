@@ -1,8 +1,8 @@
 # Computing and analysis of pan-genome alignments with PanDetector
 
-### Mario Fruzangohar , Julian Taylor  & Wasin 
+### Mario Fruzangohar , Julian Taylor  & Wasin Pipattungsakul
 ##### mario.fruzangohar@adelaide.edu.au
-##### 31-08-2023
+##### 31-08-2026
 
 The analysis of the pan-genome alignments of conserved sequence is important to measure genetic changes between population individuals and show not only the evolutionary relationships within a population but provide further insight into core gene functions and how these may shift over time or geography. This is however complicated by the limitation of current tools containing the functionality to process larger and more diverse speices. PanDetector is a fast and flexible program that is able to identify the pan-genome sequence of larger and more evolutionary diverse genomes. This document explains how to install and use PanDetector, for pan genome alignment (core and accessory), phylogenetic tree reconstruction from core genome and gives an example for the comparison of phylogenetic trees.
 
