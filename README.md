@@ -85,8 +85,7 @@ The `-o` argument specifies the output directory. Note that this
 directory will be created if it does not already exist. Inside the
 output directory, PanDetector generates a series of intermediate output files during the alignment process, but the main program outputs are:
 
-- `core_msa.maf.gz`: This is a gzipped version of a standard MAF file, each entry of core contains subject lines related to all the genomes. Coordinates and strandness of entries are in respect to the original genome FASTA file. 
-- `accessory_msa.maf.gz`: This is a gzipped version of a standard MAF file, each entry of accessory contains subject lines related to some (but not all) of the genomes. Coordinates and strandness of entries are in respect to the original genome FASTA file. 
+- `core_msa.maf.gz`: This is a gzipped version of a standard MAF file, each entry of core/accessory contains subject lines related to all the genomes. Coordinates and strandness of entries are in respect to the original genome FASTA file. 
 
 The `-d` argument is the expected divergence level, and can be any integer between 1 and 40.
 

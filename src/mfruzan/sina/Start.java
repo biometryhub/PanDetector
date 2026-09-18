@@ -861,6 +861,7 @@ public class Start extends javax.swing.JFrame {
                 //dest: output fasta file
                 //file1: output Filtered MAF File
                 //p1(optional): min length of query 
+                //p2(optional): chromosome matching
                 if(srcDir == null  || destDir == null || file1 == null ){
                    System.out.println("'All following parameters are required: 'srcdir', 'destdir', 'file1'");  
                    System.exit(1);                     
@@ -878,6 +879,7 @@ public class Start extends javax.swing.JFrame {
                 // This task reads maf file and writes it as fasta file (selects query)
                 //src dir : directory of binary maf files
                 //p1: name of binary maf files , separated by comma (last to first)
+                //p2: accessory detection
                 //dest: output msa fasta file
                 //file1 : output maf file
                 //file2: genome file , alias names : its a tab separated file, Alias_Name  File_Name  (First line is Query the following lines are subjects in order of the alignment)

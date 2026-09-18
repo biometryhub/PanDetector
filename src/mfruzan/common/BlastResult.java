@@ -68,8 +68,6 @@ public class BlastResult {
     
     
     private void insertIntoBlastHSPList2(LinkedList<BlastHSP> list, BlastHSP aHSP){
-        // we want to maintain order of HSPs based on the subject start (if HSP is +/- based on subject_end)
-        //List contains ordered HSP that their orientation has been normalized.
         
         aHSP.normalizeOrientation(); // if orientation is +/- then swap sstart and send
         
@@ -88,9 +86,6 @@ public class BlastResult {
     }
     
     public static boolean insertIntoBlastHSPList(LinkedList<BlastHSP> list, BlastHSP aHSP){
-        // finds proper position in the list for hsp and insert or replace it in the list
-        // Here we dont check for subject overlap. Just query overlaps. For more accurate result we need to check for subject overlap as well.
-        //However, because blast automaticcally sort results based on query contig and subject contigs (for each subject contig sort based on the score), there is no need to check for subject contig overlaps
         int i=0;
         for(; i<list.size(); i++){
             BlastHSP hsp = list.get(i);

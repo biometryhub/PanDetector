@@ -122,7 +122,7 @@ Output:
 PanDetector pipeline: for further help see https://github.com/biometryhub/PanDetector.git
 
 Usage:
-      ./pipeline_Minimap.sh -g <genome_list> -o <out_dir> -d <divergence> -n <ncpus>  -m <minlength>  -c <chromosome>
+      ./pipeline_Minimap.sh -g <genome_list> -o <out_dir> -d <divergence> -n <ncpus>  -m <minlength>  -c <chromosome>  -a <accessory>
 
 Mandatory options:
 	genome_list	Text file lists genome names and paths to FASTA files
@@ -133,6 +133,8 @@ Optional:
    ncpus		default is 4 cpus
    minlength(Minimum alignment length)	default is 200bp
    chromosome(chromosome matching)		default is 0 or disabled, to enable set it to 1
+   accessory(detect accessory sequences)		default is 1 or enabled, to disable set it to 0
+   
 	-h		Print Help (this message) and exit
 ```
 

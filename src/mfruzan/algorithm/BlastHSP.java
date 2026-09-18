@@ -186,180 +186,93 @@ public class BlastHSP {
         return initial_block.toString();
     }
     
-
-    public void alignSubjectPart3(int start, int end, int fragindex, List<StringBuffer> fragments, boolean log) {
-        //updated 10/5/22
-        //extract part of subject corresponding to query start and end (both 1-based). index is index of fragments list where extracted subject will be added to
-        //First elemnt of fragment list holds first query string (bottom of pairwise alignment chain, the one has ! in its contig name), this sequence will be used as main template for the rest of sequences
-        // if length of extracted subject part is not equal to previous sequences in the list then by injecting - into relevant sequences makes the length equal
-        
-        
-        int step = 1; // this is for debugging
-        int start_idx = -1; // 0-based start of subject equivalent of query
-        int end_idx = -1;  // 0-based end of subject equivalent of query (inclusive)
+    public void alignSubjectPart(int start, int end, int index, List<StringBuffer> fragments) throws Exception{
+        if (index == 3 &&  s_contig.equals("NQIK01000004.1"))
+            index = 3;
+       
+        int start_idx = 0; // 0-based start of subject equivalent of query
+        int end_idx = 0;  // 0-based end of subject equivalent of query
         int pointer = 0; // 0-based pointer at query string (q-qlignment-block minus its -)
-        TreeMap<Integer, Integer> qidxs = new TreeMap(); // Map of postions and number of times where - (gaps) observed (TreeMap orderd by Key), we call these sort of gaps New, and they are in contrast with Old gaps(gaps that already been added into fragments[0] but not appearing in current query) Gap Positions are 0-based and they exclude previous gaps in the sequence
-        //for example ACT--ATG-AAT   would return 3->2, 6->1
-       // absolute postions -> counts can be positive negative and zero, for details look into adjustIndex method.
-      if(log){
-          System.out.println(String.format("%s:%d-%d", s_contig, this.s_start, this.s_end));
-          System.out.println(String.format("offset:%d-%d", start, end));
-          System.out.println("L1" + alignment_length);
-          System.out.println("L2" + s_alignment_block.length());
-           System.out.println(s_alignment_block);
-      }
-       //First fix orientation of subject and query part
-       String adjusted_q_alignment_block = q_alignment_block;
-       String adjusted_s_alignment_block = s_alignment_block;
-       int offset_start = start;
-       int offset_end = end;
-       if (!q_pos_strand){
-           // both subject and query will be reverse complemented and start and end offsets will be updated accordingly
-           adjusted_q_alignment_block = Helper.getRC(q_alignment_block);
-           adjusted_s_alignment_block = Helper.getRC(s_alignment_block);
-           //>>>>>>SSSSS>>>
-           //<<<<<<sssss<<<
-         
-
-       }
-        try{
-            for(int i=0; i<adjusted_q_alignment_block.length(); i++){
-                if(adjusted_q_alignment_block.charAt(i) != '-'){
-                    pointer++; 
-                    if (start_idx==-1 && pointer==offset_start )
-                        start_idx = i;
-                    else if (pointer==offset_end){
-                        end_idx = i;
-                        break;
-                    }        
-                }
-                //when we get here it means we have not reached to pointer end, but we may be passed start, if we passed start and current character is - then put its relative 0-based index into inxs
-                if (pointer>=offset_start && adjusted_q_alignment_block.charAt(i) == '-')
-                    new MapUtil().increment(qidxs, pointer-offset_start + 1); 
-
-            }
-step = 2;
-           if(log){
-              
-              System.out.println(String.format("idx:%d-%d", start_idx+1, end_idx+1));
-               System.out.println(adjusted_s_alignment_block);
-              
-           }       
-
-            
-            String extracted_subject = adjusted_s_alignment_block.substring(start_idx, end_idx+1);
-            String extracted_query = adjusted_q_alignment_block.substring(start_idx, end_idx+1);
-            //if (extracted_query.length()!= extracted_subject.length())
-                //System.out.println("oops");
-            //count number of - from begining until start_idx in the adjusted_s_alignment_block
-            int left_gaps = 0;
-            for(int i=0; i<start_idx;i++)
-                if (adjusted_s_alignment_block.charAt(i)=='-')
-                    left_gaps++;
-            
-
-            // before diving into main algorithm we estimate new cordinates for subject sequence and update s_start and s_end
-            // First estimate length of pure subject part 
-            int slength = 0;
-             for(int i=0; i<extracted_subject.length(); i++){
-                 if(extracted_subject.charAt(i) != '-')
-                     slength++;
-             }
-             //then update s_start and s_end
-             if (q_pos_strand){
-                this.s_start = this.s_start + start_idx - left_gaps;
-                this.s_end = this.s_start + slength -1;
-             }else{
-                 this.s_end = this.s_end - start_idx + left_gaps;
-                 this.s_start = this.s_end - slength + 1;
-             }
-
-             // now dive into main algorithm
-            if (extracted_subject.length() == fragments.get(0).length() ){     
-                //for the first maff file this part will run (because query and subject part are the same size)
-                fragments.get(fragindex).append(extracted_subject);
-                return;
-            } 
-             
-             
-             
-            boolean esub_shorter = false;
-
-            if (extracted_subject.length() != fragments.get(0).length() || qidxs.size()>0){
-                // inject - into query string
-                //idxs contains 0-based original place in fragments.get(0) (original means after excluding -) where - should be added
-                /* 
-                for example if extracted_query and extracted_subject are like:
-                AA-CATC--ACG-TT
-                AA--TCCGA-CGATT
-                 then idxs will be 2->1 6->2 and 9->1
+        Map<Integer, Integer> idxs = new TreeMap(); // Map of postions and number of times where - observed (TreeMap orderd by Key)
+        TreeMap<Integer, Integer> adjustedIdxs = null;
+        //StringBuffer buff = new StringBuffer();//this buff wil hold extracted_subject
+        for(int i=0; i<q_alignment_block.length(); i++){
+            if(q_alignment_block.charAt(i) != '-')
+                pointer++; 
+            //else
+            //    idxs.add(i);
+            if (pointer==start)
+                start_idx = i;
+            if (pointer==end){
+                end_idx = i;
+                break;
+            }        
+            //when we get here it means we have not reached to pointer end, but we may be passed start, if we passed start and current character is - then put its relative 0-based index into inxs
+            if (pointer>=start && q_alignment_block.charAt(i) == '-')
+                new MapUtil().increment(idxs, pointer-start + 1); 
                 
-                */
-                 if(extracted_subject.length() < fragments.get(0).length())
-                     esub_shorter = true;
-                // now work out 0-based real place  in fragments.get(0) (including -)
-step = 3;                
-                TreeMap<Integer, Integer> adjustedIdxs = adjustIndex(fragments.get(0).toString(), qidxs);
-                // For above example if fragments[0] is AACA-TC---AC-G-TT, Note: the gaps between CA-TC and also AC-G are considered OLD gaps
-                //adjusted idx will be 2->1, 10 -> -1, 15 ->0
-                //If we apply adjusted idx to fargments[0]  from right to left, we should reach to string like AA-CA-TC--AC-G-TT, now if we remove OLD gaps from this string we will get to query string AA-CATC--ACG-TT
-step = 4;                
-               
-
-                // now inject positive New gaps (in this example is 2->1) to the fragments[0] to fragments[index-1]
-                //We dont apply Negative new gaps (10->-1) to the fragments, because every iteration we increase the length of alignment block not decrease
-                // we start injecting from right to left, because if we inject from left to right, when inject first one the length of buffer would change and index of the second one is not valid anymore 
-                for (int i=0; i<fragindex; i++){
-                    // start injecting from last element of idxs to the first, otherwise when inject first one all the indexes will be shifted to the right (from insertion point), so injecting second one won't be in the right place
-                    for (Entry<Integer, Integer> ent : adjustedIdxs.descendingMap().entrySet()){
-                        if (ent.getValue().intValue()>0){
-                            for (int j=0; j<ent.getValue().intValue(); j++){                        
-                               fragments.get(i).insert(ent.getKey().intValue(), '-');
-                            }
-                        }  
+        }
+ 
+        String extracted_subject = s_alignment_block.substring(start_idx, end_idx+1);
+        if (extracted_subject.length() == fragments.get(0).length() ){     
+            fragments.get(index).append(extracted_subject);
+            return;
+        } 
+        
+        String  updatedQuery = fragments.get(0).toString();
+        if (extracted_subject.length() != fragments.get(0).length() && idxs.size()>0){
+            adjustedIdxs = adjustIndex(fragments.get(0).toString(), idxs);
+            StringBuffer buff = new StringBuffer(fragments.get(0));
+            for (int i=0; i<index; i++){
+                for (Entry<Integer, Integer> ent : adjustedIdxs.descendingMap().entrySet()){
+                    if (ent.getValue().intValue()>0){
+                        for (int j=0; j<ent.getValue().intValue(); j++){                        
+                           fragments.get(i).insert(ent.getKey().intValue(), '-');
+                        }
+                    }else if (ent.getValue().intValue()<0 ){
+                        if (i==0)
+                            buff.delete(ent.getKey().intValue()+ent.getValue().intValue(), ent.getKey().intValue());
+                                                
                     }
                 }
-step = 6;       // So fragment[0]   will become : AA-CA-TC---AC-G-TT   AA-CA-TC---AC-G-TT
-                TreeMap<Integer,Integer> f0Idxs = Helper.getGapsMap2(fragments.get(0).toString());
-                //2->1,4->1,6->3,8->1,9->1
-                // Now similar to the first step we convert it into adjusted in relation to the query block              
-                TreeMap<Integer, Integer> adjustedf0Idxs = adjustIndex(extracted_query, f0Idxs);
-                //3->0,5->1,9->1,11->1,13->0    
-                // This will give us the reciepe to convert query block(AA-CATC--ACG-TT) to fragment[0] (perform from right to left)
-                //Therfore we perform the same recipe on subject block 
-               StringBuffer buff = new StringBuffer(extracted_subject);
-                // start to inject - into buff
-               for (Entry<Integer, Integer> ent : adjustedf0Idxs.descendingMap().entrySet()){
-                    if (ent.getValue().intValue()>0){
-                        // insert gap
-                        for (int j=0; j<ent.getValue().intValue(); j++)                        
-                           buff.insert(ent.getKey().intValue(), '-');
-                    } else if (ent.getValue().intValue()<0){
-                        // remove gap , if we have 10->-2
-                        for (int j=0; j<-ent.getValue().intValue(); j++){
-                            // remove character at 10-2=8 
-                            int targetIdx = ent.getKey().intValue()+ent.getValue().intValue();
-                            if (buff.charAt(targetIdx)!='-')
-                                System.out.println("Error:None Gap charachter deleted.");
-                           buff.deleteCharAt(targetIdx);
-                        }
-                    }  
-               }
-step = 8;               
-               if(buff.length() != fragments.get(0).length()){
-                    //fragments.get(index).append("Error" + buff.toString());
-                    throw new Exception("Error:Still extracted subject is not equal length to expected query at level " + fragindex + " subject " +s_contig + " Start " + s_start + " End " + s_end + Boolean.toString(esub_shorter));                                   
-               }
-               fragments.get(fragindex).append(buff);
-
             }
-       
-        }catch(Exception ex) {System.out.println(ex.getMessage() + " Error occured in alignSubjectPart3 at level " + fragindex + " debugging step " + step);}
+            
+             updatedQuery = buff.toString();
+            
+        }
+        if (fragments.get(0).length() == extracted_subject.length()){
+            fragments.get(index).append(extracted_subject);
+            return;
+        }
+        
+        if (extracted_subject.length() < fragments.get(0).length()){
+           
+            StringBuffer buff = new StringBuffer();
+            int j=0; // j is index of extracted_subject
+            for (int i = 0; i<updatedQuery.length(); i++){
+                if (updatedQuery.charAt(i)=='-' /*&& extracted_subject.charAt(j)!='-'*/){
+                    buff.append('-');
+                }else{
+                    if (j<extracted_subject.length())
+                      buff.append(extracted_subject.charAt(j++));
+                    
+                }
+            }
+            if (j<extracted_subject.length())
+                buff.append(extracted_subject.substring(j));
+            fragments.get(index).append(buff);
+            if(buff.length() != fragments.get(0).length())
+                throw new Exception("Still extracted subject is not equal length to expected query at level " + index + " subject " +s_contig + " Start " + s_start + " End " + s_end );                        
+            if (Helper.getSimilarity(fragments.get(0).toString(), buff.toString()) <0.9)
+                System.out.println("extension for subject wrong at level " + index + " subject " +s_contig + " Start " + s_start + " End " + s_end);
+            
+        }
+      
+        
     }
-
+   
     
     public TreeMap<Integer, Integer> adjustIndex(String seq, Map<Integer, Integer> idxs){
-        // idxs has position of - in original(gap-less) seq, we need to update it with actual positions of - in seq
         TreeMap<Integer, Integer> out = new TreeMap();
         
         int pointer = -1; // is original(gapless) index    of seq     
@@ -378,8 +291,6 @@ step = 8;
                 pointer++;
 
             if (pointer == gappos){
-                // we reached to the original position, so 'i' would be actual postion
-                // there migh be already - in that place , see how many there are, then we subtract it from current_count
                 int dash_cnt = 0;
                 if (i>0)
                     for (int j=i-1; j>=0; j--)
@@ -478,44 +389,28 @@ step = 8;
     }
     
     public void trimQuery(BlastHSP aHsp, boolean log){
-        // it trims query part of 'this' that has ovelap with aHsp query part, and updates whole 'this'
-        // first to see if there is no ovelap then return with no change
         
         if (!aHsp.q_contig.equals(this.q_contig))
             return ;
         if (aHsp.q_start > this.q_end  || aHsp.q_end<this.q_start)
             return ;
-    //so when we get here there is ovelap        
-        // see if there is a full overlap (this covered by aHap)
         if (this.q_start >= aHsp.q_start   && this.q_end <= aHsp.q_end ){
             System.out.println("Info:this covered by aHsp");
             this.q_len = 0;
             return ;
             
         }else if (aHsp.q_start >= this.q_start   && aHsp.q_end <= this.q_end){
-            // see if there is opposite situation aHsp covered by this
             System.out.println("Warning:aHsp covered by this");
             this.q_len = 0;
             return ;
         }
-        // so when we get here there is a partial overlap
         
         try{
             if( aHsp.q_start<=this.q_end && aHsp.q_start>this.q_start){
-                // trim end of alignment block
-                //int trim_len=0;
                 int trim_len = this.q_end - aHsp.q_start + 1;
-                //update this.q_end
                 this.q_end -= trim_len;// q_end may change in the second loop
                 int expected_q_len = this.q_len - trim_len;
 
-    //The following 2 for loops are complex, to understand indexing use below example, suppose this.q_end =10 (we want to trim only last base of query sequence)
-    /*
-    012345678
-    CTAAC--AA  -> ref positions: 5-11
-    CTAACTT-A  -> ref-positions: 2-9
-    */
-    //if orientation of this query and aHsp query is different we use RC for below calculations
     
                 int i=0;
                 int q_pos = this.q_start; // query ref start pos
@@ -530,13 +425,7 @@ step = 8;
                         break;
 
                 }
-                //System.out.println(String.format("q_pos:%d, s_pos:%d , i: %d" , q_pos, s_pos, i));
-                //when we get here i points to end of alignment block, q_pas and s_pos points to one ref position after the block (in our example 11 and 9)
                 q_pos--;
-                // if (this.s_alignment_block.charAt(i)!='-')
-                s_pos--;
-                //end of alignment should not be a gap character
-                // now from i going backward until we get to a positin where both query and subject are non-gap
                 for(;i>0; i--){
                     if (this.q_alignment_block.charAt(i)!='-' && this.s_alignment_block.charAt(i)!='-')
                         break;
@@ -546,10 +435,6 @@ step = 8;
                     if (this.s_alignment_block.charAt(i)!='-')
                         s_pos--;
                 }
-                //System.out.println(String.format("q_pos:%d, s_pos:%d , i: %d" , q_pos, s_pos, i));
-                // when we get here i points to the end of new alignment block, q_pos and s_pos points to end of query and subject ref position
-                // Now update all the relevant fields of this HSP
-                
                 this.q_end = q_pos;
                 this.s_end = s_pos;
                 this.alignment_length = i+1;
@@ -562,14 +447,10 @@ step = 8;
                     System.out.println(this.s_alignment_block);
                     System.out.println(this.q_alignment_block);
                 }
-                // trim start of alignment block
-                //int trim_len=0;
                 int old_q_start = this.q_start;
                 int trim_len =  aHsp.q_end  -this.q_start  + 1;
-                //update this.q_start
                 this.q_start += trim_len;
                 int expected_q_len = this.q_len - trim_len;
-                // we need to update q_start and s_start
                 int i=0;
                 int q_pos = old_q_start; // query ref start pos
                 int s_pos = this.s_start; // subject ref start pos
@@ -583,13 +464,8 @@ step = 8;
                         break;
 
                 }
-                //when we get here i points to start of new alignment block, q_pas and s_pos points to one ref position after the block start
-                q_pos--;
-                //we need update s_pos to the position of first non-gap character in the subject
                 if (this.s_alignment_block.charAt(i)!='-')
                  s_pos--;
-                //end of alignment should not be a gap character
-                // now from i going foreward until we get to a positin where both query and subject are non-gap
                 for(;i<this.q_alignment_block.length(); i++){
                     if (this.q_alignment_block.charAt(i)!='-' && this.s_alignment_block.charAt(i)!='-')
                         break;
@@ -600,8 +476,6 @@ step = 8;
                     if (this.q_alignment_block.charAt(i)!='-')
                         s_pos++;                
                 }
-                // when we get here i points to the start of new alignment block, q_pos and s_pos points to start of query and subject ref position
-                // Now update all the relevant fields of this HSP
                 this.q_start = q_pos;
                 this.s_start = s_pos;
                 this.alignment_length = this.alignment_length - i;
@@ -623,15 +497,11 @@ step = 8;
         
     }
     public void trimQuery2(BlastHSP aHsp, boolean log){
-        // it trims query part of 'this' that has ovelap with aHsp query part, and updates whole 'this'
-        // first to see if there is no ovelap then return with no change
         
         if (!aHsp.q_contig.equals(this.q_contig))
             return ;
         if (aHsp.q_start > this.q_end  || aHsp.q_end<this.q_start)
             return ;
-    //so when we get here there is ovelap        
-        // see if there is a full overlap (this covered by aHap)
         if (this.q_start >= aHsp.q_start   && this.q_end <= aHsp.q_end ){
             System.out.println("Info:this covered by aHsp");
             this.q_len = 0;
@@ -643,41 +513,17 @@ step = 8;
             this.q_len = 0;
             return ;
         }
-        // so when we get here there is a partial overlap
         
         try{
             if( aHsp.q_start<=this.q_end && aHsp.q_start>this.q_start){
-                // trim end of alignment block
-                //int trim_len=0;
                 int trim_len = this.q_end - aHsp.q_start + 1;
-                //to understand how this block of code works look at below example:
-/*
- query contig : 9 10 11 12 13 14 15 16
-                A T   C  A  T  T  G  A
-subject contig: 20 21 22 23 24 25 26 27                
-                G  C  A   A  T  G  A  A
-
-Then we get hit like (indexes are all blat-like start always less than end) :In MAF subject always positive, quey can be negative
-q 11 15 -  CAATG
-s  21  25 + CAATG                
-
-Now we want to clip the last 2 bases from end of query HSP, what is left is CAT (in respect to query contig) and its RC will be CAA, the new trimmed HSP is:
-q 11 13 - ATG
-s 23  25 + ATG                
-
-In terms of indexing query end is updated and subject start 
-
-    */
-    //if orientation of this query and aHsp query is different we use RC for below calculations
             if (!this.q_pos_strand){
-                // temporary reverse 
                 this.q_alignment_block = Helper.getRC(this.q_alignment_block);
                 this.s_alignment_block = Helper.getRC(this.s_alignment_block);
             }
 
     
                 int i=this.q_alignment_block.length()-1;
-                //we need  to get to an index postion, where we consume at least trim_len bases from the end and also none of positions are gap
                 int nongap_q_bases = 0;
                 int nongap_s_bases = 0;
                 for (; i>=0; i--){
@@ -699,8 +545,6 @@ In terms of indexing query end is updated and subject start
                     this.q_alignment_block = Helper.getRC(this.q_alignment_block);
                     this.s_alignment_block = Helper.getRC(this.s_alignment_block);
                 }
-                // Now update all the cordinates of this HSP
-                //query_end always getting smaller
                 this.q_end -= nongap_q_bases;               
                 this.q_len = this.q_end - this.q_start + 1;                
                 if (this.q_pos_strand){
@@ -710,40 +554,16 @@ In terms of indexing query end is updated and subject start
                 }
                 this.s_len = this.s_end - this.s_start + 1;
             }else if( aHsp.q_end>=this.q_start && aHsp.q_end<this.q_end){
-                //to understand how this block of code works look at below example:
-/*
- query contig : 9 10 11 12 13 14 15 16
-                A T   C  A  T  T  G  A
-subject contig: 20 21 22 23 24 25 26 27                
-                G  C  A   A  T  G  A  A
-
-Then we get hit like (indexes are all blat-like start always less than end) :In MAF subject always positive, quey can be negative
-q 11 15 -  CAATG
-s  21  25 + CAATG                
-
-Now we want to clip the first 2 bases from start of query HSP, what is left is TTG (in respect to query contig) and its RC will be CAA, the new trimmed HSP is:
-q 13 15 - CAA
-s 21  23 + CAA                
-
-In terms of indexing query start is updated and subject end                
-*/
-                                
-               
            
                
                 int trim_len =  aHsp.q_end  -this.q_start  + 1;
-               
-                // If q is Positive we need to update q_start and s_start
-                //If q is negative we need to update q_start and s_end
                 if (!this.q_pos_strand){
-                    // temporary reverse 
                     this.q_alignment_block = Helper.getRC(this.q_alignment_block);
                     this.s_alignment_block = Helper.getRC(this.s_alignment_block);
                 }
                 int i=0;
 
  
-                //we need  to get to an index postion, where we consume at least trim_len bases and also none of positions are gap
                 int nongap_q_bases = 0;
                 int nongap_s_bases = 0;
                 for (; i<this.q_alignment_block.length(); i++){
@@ -756,18 +576,14 @@ In terms of indexing query start is updated and subject end
                     if (this.s_alignment_block.charAt(i)!='-')
                         nongap_s_bases++;
                 }
-                //when we get here nongap variables contain numbers that need to be removed, i points to actual alignment
                 this.q_alignment_block = this.q_alignment_block.substring(i);
                 this.s_alignment_block = this.s_alignment_block.substring(i);
                  this.alignment_length = this.alignment_length - i;
                 if (!this.q_pos_strand){
-                    // brought it back to original orientation 
                     this.q_alignment_block = Helper.getRC(this.q_alignment_block);
                     this.s_alignment_block = Helper.getRC(this.s_alignment_block);
                 }
                 
-                // Now update all the relevant fields of this HSP
-                //query_start always getting larger
                 this.q_start += nongap_q_bases;               
                 this.q_len = this.q_end - this.q_start + 1;                
                 if (this.q_pos_strand){
@@ -786,9 +602,6 @@ In terms of indexing query start is updated and subject end
     }
     
     public boolean distinctQuery(BlastHSP aHsp, int overlap){
-        // it allows for overlap bp overlap between query regions
-        //updated on 5/5/2022, below code works for situations where start is always less than end even when orientation is - (which is the case in our MAF entry application)
-        // Therefore this code does not work for standard Blast HSP where start > end where orientation is negative
         if (!aHsp.q_contig.equals(this.q_contig))
             return true;
         if (aHsp.q_start > this.q_end  || aHsp.q_end<this.q_start)
@@ -820,23 +633,14 @@ In terms of indexing query start is updated and subject end
         //
         for(BlastHSP hsp: list){
             if (log){
-//              System.out.println("trim with ");
-//              hsp.print4debug();
             }
             boolean log2 = false;
-//            if (hsp.q_contig.equals("JAIRFR010000010.1") && hsp.q_start==977981 && hsp.q_end==978756)
-//                log2 = true;
            this.trimQuery2(hsp, log2); 
            if(log){
-//             System.out.print("After trimming ");
-//             this.print4debug();
            }
-           //System.out.println("new q_len " + this.q_len);
-            // Note that q_len is getting updated with calling trimQuery
             if (this.q_len<200)
                 return false;
         }
-        // when we get here , all the overlaps of this.query with memebers of the list been clipped off , and left over is greater than 200
         list.add(this);
         return true;
     }
