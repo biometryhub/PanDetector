@@ -207,7 +207,7 @@ public class BlastHSP {
                 end_idx = i;
                 break;
             }        
-            //when we get here it means we have not reached to pointer end, but we may be passed start, if we passed start and current character is - then put its relative 0-based index into inxs
+            
             if (pointer>=start && q_alignment_block.charAt(i) == '-')
                 new MapUtil().increment(idxs, pointer-start + 1); 
                 
@@ -299,7 +299,7 @@ public class BlastHSP {
                         else
                             break;
                 
-                int remainder = count - dash_cnt;// remainder can be positive, zero or negative, each has its own treatment (all are needed to be returned for the algorithm to work)                
+                int remainder = count - dash_cnt;               
                  out.put(i, remainder);
                 if (it.hasNext()){
                     ent = it.next();
@@ -351,7 +351,7 @@ public class BlastHSP {
     }
     
     public boolean subjetConnected(BlastHSP hsp , int overlap){
-        // returns true if this hsp' subject continues the other one and also 2 hsp have separate query regions
+       
         if (!hsp.s_contig.equals(this.s_contig))
             return false;
 
