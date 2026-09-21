@@ -94,5 +94,6 @@ Other arguments to PanDetector are optional, and allow fine-tuning of the progra
 - `-n` is the number of cores/CPUs to use for the program execution (default is 4 cores).
 - `-m` is the minimum alignment length, in bp (the default is 200bp).
 - `-c` toggles chromosome number matching (1: enabled, 0:disabled, default is 0). Note that if chromosome number matching is enabled, PanDetector considers a contig name to start with a chromosome number, such as '2B' or 'chr14' or simply '14', followed by a space (or the characters '_','-','!'). If this pattern does not exist in contig names, no error will be raised, but chromosome checking will be skipped for current genome.
+- `-a` whether or not accessory sequences are detected and reported. (1: enabled, 0:disabled, default is 1). 
 
 The [PanDetector Manual](https://github.com/biometryhub/PanDetector/blob/master/Manual.md) explains program usage in detail, and lists further analysis examples.
