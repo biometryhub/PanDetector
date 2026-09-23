@@ -36,7 +36,7 @@ cp k8-0.2.4/k8-`uname -s` k8              # or copy it to a directory on your $P
 #Make sure the MiniMap2 and k8 executable files are in your PATH environment variable. 
 export PATH="$PATH:`pwd`:`pwd`/misc"   
 ```
-**`Step 2.`** Make sure Java 1.8 or higher is installed. 
+**`Step 2.`** Make sure Java 17 or higher is installed. 
 
 
 ### <a name="download"></a> Obtaining and setting up PanDetector

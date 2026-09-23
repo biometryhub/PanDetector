@@ -20,28 +20,28 @@ mkdir -p $HOME/bin
 echo "export PATH=$HOME/bin:${PATH}" >> $HOME/.bashrc && source $HOME/.bashrc
 ```
 
-#### Step 2. Download and install Minimap2 (v2.26)
-Grab the v2.26 release of Minimap2 from its GitHub repository [here](https://github.com/lh3/minimap2/releases/tag/v2.26). Alternatively, copy-paste the below commands to automatically download, compile and configure Minimap2. (Note: this compilation requires compiler tools and the zlib development headers to be installed: on Ubuntu 22.04, you can easily install these compilation dependencies with `sudo apt-get -y install build-essential zlib1g-dev`. You might need to run `sudo apt-get update` before installing build-essential and zlib1g-dev)
+#### Step 2. Download and install Minimap2 (v2.31)
+Grab the v2.31 release of Minimap2 from its GitHub repository [here](https://github.com/lh3/minimap2/releases/tag/v2.31). Alternatively, copy-paste the below commands to automatically download, compile and configure Minimap2. (Note: this compilation requires compiler tools and the zlib development headers to be installed: on Ubuntu 26.04, you can easily install these compilation dependencies with `sudo apt-get -y install build-essential zlib1g-dev`. You might need to run `sudo apt-get update` before installing build-essential and zlib1g-dev.)
 ```bash
-wget "https://github.com/lh3/minimap2/releases/download/v2.26/minimap2-2.26.tar.bz2"
-tar -xjf minimap2-2.26.tar.bz2
-cd minimap2-2.26 && make
-cp minimap2/misc/paftools.js $HOME/bin/
+wget "https://github.com/lh3/minimap2/releases/download/v2.31/minimap2-2.31.tar.bz2"
+tar -xjf minimap2-2.31.tar.bz2
+cd minimap2-2.31 && make
+cp minimap2 misc/paftools.js $HOME/bin/
 cd ..
 ```
 
-#### Step 3. Download and install K8 (v1.0)
-Get the v1.0 release of the K8 Javascript shell from its GitHub repository [here](https://github.com/attractivechaos/k8/releases/tag/v1.0). Alternatively, execute the following commands to automatically download and configure the precompiled K8 binary:
+#### Step 3. Download and install K8 (v1.2)
+Get the v1.0 release of the K8 Javascript shell from its GitHub repository [here](https://github.com/attractivechaos/k8/releases/tag/v1.2). Alternatively, execute the following commands to automatically download and configure the precompiled K8 binary:
 ```bash
-wget "https://github.com/attractivechaos/k8/releases/download/v1.0/k8-1.0.tar.bz2"
-tar -xjf k8-1.0.tar.bz2
-cp k8-1.0/k8-x86_64-Linux $HOME/bin/k8
+wget "https://github.com/attractivechaos/k8/releases/download/v1.2/k8-1.2.tar.bz2"
+tar -xjf k8-1.2.tar.bz2
+cp k8-1.2/k8-x86_64-Linux $HOME/bin/k8
 ```
 
 #### Step 4. Install a Java runtime/development kit
-[OpenJDK-11](https://openjdk.org/projects/jdk/11/) (or later versions) have been confirmed to work well with PanDetector. For most Linux systems, these are easily installed via the package manager. E.g., to install OpenJDK-11 (the default JDK) on Ubuntu 22.04:
+[OpenJDK-17](https://openjdk.org/projects/jdk/17/) (or later versions) have been confirmed to work well with PanDetector. For most Linux systems, these are easily installed via the package manager. E.g., to install OpenJDK-17 on Ubuntu 26.04:
 ```bash
-sudo apt-get -y install openjdk-11-jdk  # or default-jdk
+sudo apt-get -y install openjdk-17-jdk
 ```
 
 #### Step 5. Download PanDetector and run an example pipeline
